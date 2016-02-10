@@ -1,6 +1,6 @@
 {
   "name": "sse-express",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Alexey Lizurchik <al.lizurchik@gmail.com>",
   "keywords": "express, expressjs, server sent events, sse, middleware",
   "description": "Server sent events middleware implementation for expressjs",
