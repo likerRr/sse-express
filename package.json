@@ -1,0 +1,15 @@
+{
+  "name": "sse-express",
+  "version": "1.0.0",
+  "author": "Alexey Lizurchik <al.lizurchik@gmail.com>",
+  "keywords": "express, expressjs, server sent events, sse, middleware",
+  "description": "Server sent events middleware implementation for expressjs",
+  "engines": {
+    "node": ">=5.1.0"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.13.4"
+  },
+  "license": "MIT"
+}
