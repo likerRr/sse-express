@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+<header id="user-id"></header>
+
+<ul id="chat">
+
+</ul>
+
+<label for="message">
+  Message:
+  <input type="text" id="message">
+</label>
+
+<button id="send">Send</button>
+
+<script>
+  var eventSource;
+  var myUserId;
+
+  listenUpdates();
+
+  document.querySelector('#send').addEventListener('click', function() {
+    var text = document.querySelector('#message').value;
+
+    if (text) {
+      fetch('http://localhost:99/sendMessage', {
+        method: 'POST',
+        headers: {
+          "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+        },
+        body: 'message=' + text + '&userId=' + myUserId
+      });
+    }
+  });
+
+  function listenUpdates() {
+    // subscribe to updates
+    eventSource = new EventSource('http://localhost:99/updates');
+
+    eventSource.addEventListener('message', onMessage);
+    eventSource.addEventListener('connected', onConnected);
+    eventSource.onopen = onopen;
+    eventSource.onerror = onerror;
+    eventSource.onmessage = onmessage;
+
+    //
+
+    /**
+     * Receive and set user id
+     * @param event
+     */
+    function onConnected(event) {
+      myUserId = JSON.parse(event.data).id;
+      document.querySelector('#user-id').innerText = 'You id is ' + myUserId;
+    }
+
+    /**
+     * Receive message and display it
+     * @param event
+     */
+    function onMessage(event) {
+      var data = JSON.parse(event.data);
+      var li = document.createElement('li');
+      var chat = document.querySelector('#chat');
+
+      li.innerText = (new Date()).toLocaleDateString("en-US") + ', ' + data.userId + ': ' + data.text;
+      chat.insertBefore(li, chat.firstChild);
+    }
+
+    function onmessage(data) {
+      console.log(data);
+    }
+
+    /**
+     * Reconnect on error
+     */
+    function onerror() {
+      eventSource.close();
+
+      // reconnect on error
+      setTimeout(listenUpdates, 2000);
+    }
+
+    /**
+     * Yahoo!
+     */
+    function onopen() {
+      console.log('Connection is established');
+    }
+
+  }
+
+
+</script>
+</body>
+</html>

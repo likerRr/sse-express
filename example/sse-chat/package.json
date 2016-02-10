@@ -1,0 +1,12 @@
+{
+  "name": "sse-chat",
+  "author": "Alexey Lizurchik <al.lizurchik@gmail.com>",
+  "version": "0.0.1",
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "express": "^4.13.4",
+    "lodash": "^4.2.1",
+    "sse-express": "^1.0.0"
+  },
+  "license": "MIT"
+}
