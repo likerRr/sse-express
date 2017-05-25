@@ -31,9 +31,10 @@ function sseMiddleware(__, res, next) {
     if (id) {
       res.write(`id: ${id}\n`);
     }
-
+    if (evt) {
+      res.write(`event: ${evt}\n`);
+    }
     res.write(`retry: 3000\n`);
-    res.write(`event: ${evt}\n`);
     res.write(`data: ${JSON.stringify(json)}\n\n`);
   };
   next();
