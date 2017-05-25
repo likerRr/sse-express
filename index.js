@@ -15,9 +15,12 @@ function sseMiddleware(__, res, next) {
     'Access-Control-Allow-Origin': '*'
   });
 
-  setInterval(() => {
+  const handshakeInterval = setInterval(() => {
     res.write(': sse-handshake');
   }, 3000);
+
+  res.on('finish', () => clearInterval(handshakeInterval));
+  res.on('close', () => clearInterval(handshakeInterval));
 
   /**
    * Add function to response which allow to send events to the client
