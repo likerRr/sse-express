@@ -21,24 +21,29 @@ function sseMiddleware(__, res, next) {
 
   res.on('finish', () => clearInterval(handshakeInterval));
   res.on('close', () => clearInterval(handshakeInterval));
+  res.sse = sendSse;
 
-  /**
-   * Add function to response which allow to send events to the client
-   * @param evt
-   * @param json
-   * @param [id]
-   */
-  res.sse = (evt, json, id) => {
-    res.write('\n');
-
-    if (id) {
-      res.write(`id: ${id}\n`);
-    }
-    if (evt) {
-      res.write(`event: ${evt}\n`);
-    }
-    res.write(`retry: 3000\n`);
-    res.write(`data: ${JSON.stringify(json)}\n\n`);
-  };
   next();
+}
+
+/**
+ * Sends "server sent event"
+ * Bound to http.ServerResponse
+ * @param evt
+ * @param json
+ * @param [id]
+ */
+function sendSse(evt, json, id) {
+  const res = this;
+
+  res.write('\n');
+
+  if (id) {
+    res.write(`id: ${id}\n`);
+  }
+  if (evt) {
+    res.write(`event: ${evt}\n`);
+  }
+  res.write(`retry: 3000\n`);
+  res.write(`data: ${JSON.stringify(json)}\n\n`);
 }
