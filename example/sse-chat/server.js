@@ -15,6 +15,11 @@
   app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
   }));
+  app.use((req, res, next) => {
+    // cors
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+  });
 
   app.post('/sendMessage', (req, res) => {
     res.writeHead(200, {
