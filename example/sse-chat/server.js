@@ -16,7 +16,7 @@
     extended: true
   }));
   app.use((req, res, next) => {
-    // cors
+    // setup cors
     res.setHeader('Access-Control-Allow-Origin', '*');
     next();
   });
