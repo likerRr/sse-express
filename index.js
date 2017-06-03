@@ -1,31 +1,41 @@
 module.exports = exports = sseMiddleware;
 
+const handshakeQueryName = 'handshake-interval';
+const defaultConfig = {
+  handShakeInterval: 3000
+};
+
 /**
  * Middleware that adds support of Server Sent Events
- * @param req
- * @param res
- * @param next
+ * @param options
  * @void
  */
-function sseMiddleware(req, res, next) {
-  res.sse = sse(res);
+function sseMiddleware(options) {
+  return (req, res, next) => {
+    const config = {
+      handShakeInterval: req.query[handshakeQueryName] || defaultConfig.handShakeInterval
+    };
 
-  next();
+    res.sse = sse(res, config);
+
+    next();
+  }
 }
 
 /**
  * Encapsulates middleware's logic
  * @param res
+ * @param config
  * @returns {sendSse}
  */
-function sse(res) {
+function sse(res, config) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive'
   });
 
-  keepAlive(res, 3000);
+  keepAlive(res, config.handShakeInterval);
 
   return sendSse;
 }
@@ -60,6 +70,6 @@ function sendSse(evt, json, id) {
 function keepAlive(res, updateInterval) {
   const handshakeInterval = setInterval(() => res.write(': sse-handshake'), updateInterval);
 
-  res.on('finish', clearInterval(handshakeInterval));
-  res.on('close', clearInterval(handshakeInterval));
+  res.on('finish', () => clearInterval(handshakeInterval));
+  res.on('close', () => clearInterval(handshakeInterval));
 }
