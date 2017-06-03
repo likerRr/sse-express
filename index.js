@@ -8,6 +8,17 @@ module.exports = exports = sseMiddleware;
  * @void
  */
 function sseMiddleware(req, res, next) {
+  res.sse = sse(res);
+
+  next();
+}
+
+/**
+ * Encapsulates middleware's logic
+ * @param res
+ * @returns {sendSse}
+ */
+function sse(res) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
@@ -16,9 +27,7 @@ function sseMiddleware(req, res, next) {
 
   keepAlive(res, 3000);
 
-  res.sse = sendSse;
-
-  next();
+  return sendSse;
 }
 
 /**
@@ -46,10 +55,10 @@ function sendSse(evt, json, id) {
 /**
  * Periodically sends messages to client to keep connection alive
  * @param res
- * @param repeatMs
+ * @param updateInterval
  */
-function keepAlive(res, repeatMs) {
-  const handshakeInterval = setInterval(() => res.write(': sse-handshake'), repeatMs);
+function keepAlive(res, updateInterval) {
+  const handshakeInterval = setInterval(() => res.write(': sse-handshake'), updateInterval);
 
   res.on('finish', clearInterval(handshakeInterval));
   res.on('close', clearInterval(handshakeInterval));
