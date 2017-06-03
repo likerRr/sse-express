@@ -41,7 +41,7 @@
 
   function listenUpdates() {
     // subscribe to updates
-    eventSource = new EventSource('http://localhost:99/updates');
+    eventSource = new EventSource('http://localhost:99/updates?handshake-interval=3000');
 
     eventSource.addEventListener('message', onMessage);
     eventSource.addEventListener('connected', onConnected);

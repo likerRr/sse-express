@@ -36,7 +36,7 @@
     res.end();
   });
 
-  app.get('/updates', sseExpress, function(req, res) {
+  app.get('/updates', sseExpress(), function(req, res) {
     connections.push(res);
     // send id to user
     res.sse('connected', {
