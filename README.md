@@ -39,6 +39,20 @@ You can configure the interval by passing `handshake-interval` query when initia
 let eventSource = new EventSource('http://localhost:80/updates?handshake-interval=1000');
 ```
 
+Or/and you can configure a handshake interval on server side:
+
+```javascript
+let sseExpress = require('./sse-express');
+//...
+app.use(sseExpress({handshakeInterval: 1000}));
+```
+
+The priority of choosing which interval to use is (from low to high):
+
+1. Default value
+2. Server config
+3. Client's query
+
 #### Useful references about `EventSource`
 * [MDN - Receiving events from the server](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)
 * [Stream Updates with Server-Sent Events](http://www.html5rocks.com/en/tutorials/eventsource/basics/#toc-reconnection-timeout)

@@ -7,13 +7,13 @@ const defaultConfig = {
 
 /**
  * Middleware that adds support of Server Sent Events
- * @param options
+ * @param {{handShakeInterval: number}} options
  * @void
  */
 function sseMiddleware(options) {
   return (req, res, next) => {
     const config = {
-      handShakeInterval: req.query[handshakeQueryName] || defaultConfig.handShakeInterval
+      handShakeInterval: req.query[handshakeQueryName] || options.handShakeInterval || defaultConfig.handShakeInterval
     };
 
     res.sse = sse(res, config);
@@ -25,7 +25,7 @@ function sseMiddleware(options) {
 /**
  * Encapsulates middleware's logic
  * @param res
- * @param config
+ * @param {{handShakeInterval: number}} config
  * @returns {sendSse}
  */
 function sse(res, config) {
@@ -43,23 +43,46 @@ function sse(res, config) {
 /**
  * Sends "server sent event"
  * Bound to http.ServerResponse
- * @param evt
- * @param json
+ * @param event
+ * @param data
  * @param [id]
  */
-function sendSse(evt, json, id) {
-  const res = this;
+function sendSse(event, data, id) {
+  const eventStream = buildEventStream({data, event, id});
 
-  res.write('\n');
+  this.write(eventStream);
+}
+
+/**
+ * Builds event stream. Accept either field set or array of field sets
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format
+ * @param {{data: *, event?: string, id?: string|number, retry?: number}|Array} fields
+ * @returns {string}
+ */
+function buildEventStream(fields) {
+  if (Array.isArray(fields)) {
+    return fields.map(fieldSet => buildEventStream(fieldSet)).join('');
+  }
+
+  const {event, id, retry} = fields;
+  let data = fields.data;
+  let message = 'retry: 3000\n';
 
   if (id) {
-    res.write(`id: ${id}\n`);
+    message += `id: ${id}\n`;
   }
-  if (evt) {
-    res.write(`event: ${evt}\n`);
+
+  if (event) {
+    message += `event: ${event}\n`;
   }
-  res.write(`retry: 3000\n`);
-  res.write(`data: ${JSON.stringify(json)}\n\n`);
+
+  if (typeof data === 'object') {
+    data = JSON.stringify(data);
+  }
+
+  message += `data: ${data}\n\n`;
+
+  return message;
 }
 
 /**
