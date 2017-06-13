@@ -1,20 +1,26 @@
-module.exports = exports = sseMiddleware;
+module.exports = exports = sseMiddlewareFactory;
 
-const handshakeQueryName = 'handshake-interval';
+const HANDSHAKE_QUERY = 'handshake-interval';
+const RETRY_QUERY = 'retry';
 const defaultConfig = {
-  handShakeInterval: 3000
+  handShakeInterval: 3000,
+  // https://www.w3.org/TR/eventsource/#concept-event-stream-reconnection-time
+  retry: 3000
 };
 
 /**
  * Middleware that adds support of Server Sent Events
- * @param {{handShakeInterval: number}} options
+ * @param {{handShakeInterval: number, retry: number}} options
  * @void
  */
-function sseMiddleware(options) {
+function sseMiddlewareFactory(options = defaultConfig) {
   return (req, res, next) => {
     const config = {
-      handShakeInterval: req.query[handshakeQueryName] || options.handShakeInterval || defaultConfig.handShakeInterval
+      handShakeInterval: req.query[HANDSHAKE_QUERY] || options.handShakeInterval || defaultConfig.handShakeInterval,
+      retry: req.query[RETRY_QUERY] || options.retry || defaultConfig.retry
     };
+
+    establishConnection(res, config);
 
     res.sse = sse(res, config);
 
@@ -23,34 +29,27 @@ function sseMiddleware(options) {
 }
 
 /**
- * Encapsulates middleware's logic
+ * Sends proper headers to keep connection alive. Also starts a time which periodically sends handshake event
  * @param res
- * @param {{handShakeInterval: number}} config
- * @returns {sendSse}
+ * @param config
  */
-function sse(res, config) {
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
-
-  keepAlive(res, config.handShakeInterval);
-
-  return sendSse;
+function establishConnection(res, config) {
+  keepAlive(res);
+  setHandshakeInterval(res, config.handShakeInterval);
 }
 
 /**
- * Sends "server sent event"
- * Bound to http.ServerResponse
- * @param event
- * @param data
- * @param [id]
+ * Returns function which sends "server sent event" to client
+ * @param res
+ * @param {{handShakeInterval: number, retry: number}} config
+ * @returns {function(event: string, data: string, id: string)}
  */
-function sendSse(event, data, id) {
-  const eventStream = buildEventStream({data, event, id});
+function sse(res, config) {
+  return (event, data, id) => {
+    const eventStream = buildEventStream({data, event, id, retry: config.retry});
 
-  this.write(eventStream);
+    res.write(eventStream);
+  };
 }
 
 /**
@@ -66,7 +65,7 @@ function buildEventStream(fields) {
 
   const {event, id, retry} = fields;
   let data = fields.data;
-  let message = 'retry: 3000\n';
+  let message = `retry: ${retry}\n`;
 
   if (id) {
     message += `id: ${id}\n`;
@@ -86,11 +85,23 @@ function buildEventStream(fields) {
 }
 
 /**
+ * Sends headers to keep connection alive
+ * @param res
+ */
+function keepAlive(res) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+}
+
+/**
  * Periodically sends messages to client to keep connection alive
  * @param res
  * @param updateInterval
  */
-function keepAlive(res, updateInterval) {
+function setHandshakeInterval(res, updateInterval) {
   const handshakeInterval = setInterval(() => res.write(': sse-handshake'), updateInterval);
 
   res.on('finish', () => clearInterval(handshakeInterval));

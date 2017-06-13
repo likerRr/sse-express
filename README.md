@@ -47,7 +47,19 @@ let sseExpress = require('./sse-express');
 app.use(sseExpress({handshakeInterval: 1000}));
 ```
 
-The priority of choosing which interval to use is (from low to high):
+The same way you can configure a reconnection time (3000ms by default) after which browser will try to restore a connection if it is lost:
+
+```javascript
+// fron-end setup
+let eventSource = new EventSource('http://localhost:80/updates?retry=1000');
+
+// or back-end setup
+let sseExpress = require('./sse-express');
+//...
+app.use(sseExpress({retry: 1000}));
+```
+
+The priority of choosing which option to be used is (from low to high priority):
 
 1. Default value
 2. Server config
