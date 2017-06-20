@@ -2,6 +2,8 @@ module.exports = exports = sseMiddlewareFactory;
 
 const HANDSHAKE_QUERY = 'handshake-interval';
 const RETRY_QUERY = 'retry';
+const LAST_EVENT_ID_QUERY = 'lastEventId';
+const LAST_EVENT_ID_HEADER = 'last-event-id';
 const defaultConfig = {
   handShakeInterval: 3000,
   // https://www.w3.org/TR/eventsource/#concept-event-stream-reconnection-time
@@ -23,6 +25,11 @@ function sseMiddlewareFactory(options = defaultConfig) {
     establishConnection(res, config);
 
     res.sse = sse(res, config);
+
+    Object.defineProperty(res.sse, 'lastEventId', {
+      writable: false,
+      value: req.get(LAST_EVENT_ID_HEADER) || req.query[LAST_EVENT_ID_QUERY] || res.sse.lastEventId
+    });
 
     next();
   }
@@ -47,6 +54,10 @@ function establishConnection(res, config) {
 function sse(res, config) {
   return (event, data, id) => {
     const eventStream = buildEventStream({data, event, id, retry: config.retry});
+
+    if (id) {
+      res.sse.lastEventId = id;
+    }
 
     res.write(eventStream);
   };
