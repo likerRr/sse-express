@@ -17,7 +17,7 @@ app.get('/updates', sseExpress(), function(req, res) {
       welcomeMsg: 'Hello world!'
     });
 });
-```
+`````````
 
 At the client side you can listen to message through `EventSource` instance:
 
@@ -74,5 +74,11 @@ The priority of choosing which option to be used is (from low to high priority):
 `evt` - is event name
 `json` - object that will be sent as json string to a client
 `[id]` - optional id of event
+
+#### res.sse.lastEventId
+Property which contains either `Last-Event-Id` header or `lastEventId` query parameter. Normally it's sent by browser in request headers. 
+But not all (almost all) browsers do such. That's why middleware also can read query parameter `lastEventId`. 
+
+Every time `res.sse` called with not empty `id` parameter `res.sse.lastEventId` will be replaced with this value. 
 
 ## [MIT License](http://likerrr.mit-license.org/)

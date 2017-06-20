@@ -30,7 +30,7 @@
       connection.sse('message', {
         text: req.body.message,
         userId: req.body.userId
-      });
+      }, Date.now() + req.body.userId);
     });
 
     res.end();
