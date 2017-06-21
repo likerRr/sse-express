@@ -70,10 +70,10 @@ The priority of choosing which option to be used is (from low to high priority):
 * [Stream Updates with Server-Sent Events](http://www.html5rocks.com/en/tutorials/eventsource/basics/#toc-reconnection-timeout)
 
 # API
-#### res.sse(evt, json, id)
-`evt` - is event name
-`json` - object that will be sent as json string to a client
-`[id]` - optional id of event
+#### res.sse(evt, data, [id])
+* `evt` - event name
+* `data` - can be either a `string` or an `object`. Object are converted to `json` string
+* `[id]` - optional id of event
 
 #### res.sse.lastEventId
 Property which contains either `Last-Event-Id` header or `lastEventId` query parameter. Normally it's sent by browser in request headers. 
