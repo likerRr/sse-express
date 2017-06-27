@@ -2,7 +2,7 @@
 [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) middleware implementation for [express](http://expressjs.com/)
 
 # Install
-`npm install --save sse-express`
+`npm install --save sse-express@next`
 
 The package requires `express`, because it was created directly for the framework. Also it utilizes `ES6` features, so be sure that `node` v5.0+ is installed.
 
