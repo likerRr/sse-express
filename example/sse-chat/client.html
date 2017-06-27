@@ -41,7 +41,7 @@
 
   function listenUpdates() {
     // subscribe to updates
-    eventSource = new EventSource('http://localhost:99/updates?handshake-interval=3000&lastEventId=2376523');
+    eventSource = new EventSource('http://localhost:99/updates?handshake-interval=3000&lastEventId=12345&retry=3000');
 
     eventSource.addEventListener('message', onMessage);
     eventSource.addEventListener('connected', onConnected);
@@ -76,6 +76,7 @@
     }
 
     function onmessage(data) {
+      // catches unnamed events (without event property)
       console.log(data);
     }
 
@@ -83,10 +84,13 @@
      * Reconnect on error
      */
     function onerror() {
-      eventSource.close();
+      if (this.readyState === EventSource.CLOSED) {
+        console.log('Connection closed by client')
+      }
 
-      // reconnect on error
-      setTimeout(listenUpdates, 2000);
+      if (this.readyState === EventSource.CONNECTING) {
+        console.log('Trying restore the connection');
+      }
     }
 
     /**
@@ -95,7 +99,6 @@
     function onopen() {
       console.log('Connection is established');
     }
-
   }
 
 
