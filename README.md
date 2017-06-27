@@ -7,19 +7,22 @@
 The package requires `express`, because it was created directly for the framework. Also it utilizes `ES6` features, so be sure that `node` v5.0+ is installed.
 
 # Usage
-Use it simply a middleware for any of your routes. When is used as middleware method `sse()` is added to response object of the route. You can use it to send messages to a client.
+Use it simply a middleware for any of your routes. When is used as middleware method `sse()` is added to response object of the route. You can use it for sending messages to a client.
 
 ```javascript
 let sseExpress = require('./sse-express');
 //...
 app.get('/updates', sseExpress(), function(req, res) {
-    res.sse('connected', {
-      welcomeMsg: 'Hello world!'
+    res.sse({
+        event: 'connected',
+        data: {
+          welcomeMsg: 'Hello world!'
+        }
     });
 });
 `````````
 
-At the client side you can listen to message through `EventSource` instance:
+On the client side you can listen to a message through `EventSource` instance:
 
 ```javascript
 let eventSource = new EventSource('http://localhost:80/updates');
@@ -28,6 +31,11 @@ eventSource.addEventListener('connected', (e) => {
     console.log(e.data.welcomeMsg);
     // => Hello world!
 });
+
+// listens to all the messages. The only way to catch unnamed events (with no `event` name set)
+eventSource.onmessage = message => {
+  console.log(message);
+};
 ```
 
 > **Important!** Don't forget to check out browser compatibility of `EventSource`. At the moment it doesn't implemented in any versions of IE.
@@ -70,10 +78,13 @@ The priority of choosing which option to be used is (from low to high priority):
 * [Stream Updates with Server-Sent Events](http://www.html5rocks.com/en/tutorials/eventsource/basics/#toc-reconnection-timeout)
 
 # API
-#### res.sse(evt, data, [id])
-* `evt` - event name
+#### res.sse({data, [event], [id]} | Array<{data, [event], [id]}>)
+
+Accepts object representing an event stream or an array of objects:
+
 * `data` - can be either a `string` or an `object`. Object are converted to `json` string
-* `[id]` - optional id of event
+* `[event]` (optional) - event name
+* `[id]` (optional) - id of event
 
 #### res.sse.lastEventId
 Property which contains either `Last-Event-Id` header or `lastEventId` query parameter. Normally it's sent by browser in request headers. 

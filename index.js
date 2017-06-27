@@ -49,18 +49,38 @@ function establishConnection(res, config) {
  * Returns function which sends "server sent event" to client
  * @param res
  * @param {{handShakeInterval: number, retry: number}} config
- * @returns {function(event: string, data: string, id: string)}
+ * @returns {function({data: string, [event]: string, [id]: string}|Array<{data: string, [event]: string, [id]: string}>)}
  */
 function sse(res, config) {
-  return (event, data, id) => {
-    const eventStream = buildEventStream({data, event, id, retry: config.retry});
+  return (message) => {
+    if (Array.isArray(message)) {
+      message = message.map(msg => configureStreamObject(msg, config));
+    } else {
+      message = configureStreamObject(message, config);
+    }
 
-    if (id) {
-      res.sse.lastEventId = id;
+    const eventStream = buildEventStream(message);
+    // Retrieve message
+    const singleMessage = Array.isArray(message) ? message[message.length - 1] : message;
+
+    if (singleMessage.id) {
+      res.sse.lastEventId = singleMessage.id;
     }
 
     res.write(eventStream);
   };
+}
+
+/**
+ * Add/modify message from config
+ * @param message
+ * @param retry
+ * @returns {*}
+ */
+function configureStreamObject(message, {retry}) {
+  message.retry = retry;
+
+  return message;
 }
 
 /**

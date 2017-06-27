@@ -27,10 +27,14 @@
     });
 
     connections.forEach(function(connection) {
-      connection.sse('message', {
-        text: req.body.message,
-        userId: req.body.userId
-      }, Date.now() + req.body.userId);
+      connection.sse({
+        event: 'message',
+        data: {
+          text: req.body.message,
+          userId: req.body.userId
+        },
+        id: Date.now() + req.body.userId
+      });
     });
 
     res.end();
@@ -38,10 +42,15 @@
 
   app.get('/updates', sseExpress(), function(req, res) {
     connections.push(res);
-    // send id to user
-    res.sse('connected', {
-      id: globalId
-    });
+    res.sse([{
+      data: 'hello'
+    }, {
+      // send id to user
+      event: 'connected',
+      data: {
+        id: globalId
+      }
+    }]);
     globalId++;
 
     req.on("close", function() {
@@ -52,7 +61,7 @@
     console.log(`Hello, ${globalId}!`);
   });
 
-  app.listen(99, function () {
+  app.listen(99, function() {
     console.log('Example app listening on port 99!');
   });
 })();

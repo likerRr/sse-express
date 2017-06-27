@@ -65,12 +65,14 @@
      * @param event
      */
     function onMessage(event) {
-      var data = JSON.parse(event.data);
-      var li = document.createElement('li');
-      var chat = document.querySelector('#chat');
+      try {
+        var data = JSON.parse(event.data);
+        var li = document.createElement('li');
+        var chat = document.querySelector('#chat');
 
-      li.innerText = (new Date()).toLocaleDateString("en-US") + ', ' + data.userId + ': ' + data.text;
-      chat.insertBefore(li, chat.firstChild);
+        li.innerText = (new Date()).toLocaleDateString("en-US") + ', ' + data.userId + ': ' + data.text;
+        chat.insertBefore(li, chat.firstChild);
+      } catch (e) {}
     }
 
     function onmessage(data) {
