@@ -6,7 +6,7 @@
     "body-parser": "^1.14.2",
     "express": "^4.13.4",
     "lodash": "^4.2.1",
-    "sse-express": "^1.0.0"
+    "sse-express": "2.0.0-rc"
   },
   "license": "MIT"
 }
