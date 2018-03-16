@@ -133,7 +133,7 @@ function keepAlive(res) {
  * @param updateInterval
  */
 function setHandshakeInterval(res, updateInterval) {
-  const handshakeInterval = setInterval(() => res.write(': sse-handshake'), updateInterval);
+  const handshakeInterval = setInterval(() => res.write(': sse-handshake\n'), updateInterval);
 
   res.on('finish', () => clearInterval(handshakeInterval));
   res.on('close', () => clearInterval(handshakeInterval));
